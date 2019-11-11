@@ -12,8 +12,8 @@ services:
              - "443:443"
         volumes:
             - ./nginx/config/nginx.conf:/etc/nginx/nginx.conf:ro
-            - ./nginx/ssl/certs/trustedfox.ddns.net.pem:/etc/ssl/certs/trustedfox.ddns.net.pem:ro
-            - ./nginx/ssl/private/trustedfox.ddns.net.pem:/etc/ssl/private/trustedfox.ddns.net.pem:ro
+            - ./nginx/ssl/certs/${NEXTCLOUD_DOMAIN}.pem:/etc/ssl/certs/${NEXTCLOUD_DOMAIN}.pem:ro
+            - ./nginx/ssl/private/${NEXTCLOUD_DOMAIN}.pem:/etc/ssl/private/${NEXTCLOUD_DOMAIN}.pem:ro
             - ./nginx/ssl/dhparam.pem:/etc/ssl/dhparam.pem:ro
             - ./nextcloud/data:/var/www/html/:ro
             - ./letsencrypt/conf:/etc/letsencrypt:ro
@@ -21,6 +21,7 @@ services:
         networks:
             - frontend
 
+    
     php:
         image: nextcloud:production-fpm-alpine
         container_name: nextcloud01
