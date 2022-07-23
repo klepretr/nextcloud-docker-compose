@@ -1,0 +1,3 @@
+traefik_ssl_enable: true # or false
+traefik_email: my@email.address.io # letsencrypt contact mail, usefull only if traefik_ssl_enable is true
+database_username: nextcloud_user

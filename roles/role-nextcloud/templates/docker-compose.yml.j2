@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  php:
+    image: nextcloud:${NEXTCLOUD_VERSION}
+    container_name: nextcloud_php01
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      MYSQL_HOST: ${DATABASE_HOST}
+      MYSQL_USER: ${DATABASE_USERNAME}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_DOMAIN}
+    volumes:
+      - nextcloud_data:/var/www/html/
+    networks:
+      - traefik_web
+      - backend
+    labels:
+      traefik.enable: true
+      traefik.docker.network: traefik_web
+      traefik.http.routers.nextcloud.entrypoints: "{{ 'websecure' if traefik_ssl_enable else 'web' }}"
+      traefik.http.routers.nextcloud.rule: "Host(`${NEXTCLOUD_DOMAIN}`)"
+      traefik.http.services.nextcloud.loadbalancer.server.port: 80
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  db:
+    image: mariadb:${MARIADB_VERSION}
+    container_name: nextcloud_mariadb01
+    restart: unless-stopped
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: ${DATABASE_RANDOM_ROOT_PASSWORD}
+      MYSQL_USER: ${DATABASE_USERNAME}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+    volumes:
+      - nextcloud_database:/var/lib/mysql
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+networks:
+  traefik_web:
+    external: true
+  backend:
+volumes:
+  nextcloud_database:
+  nextcloud_data:

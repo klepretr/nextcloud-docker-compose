@@ -1,0 +1,37 @@
+entryPoints:
+  web:
+    address: :80
+{% if traefik_ssl_enable %}
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: :443
+    http:
+      tls:
+        certResolver: myresolver
+      middlewares:
+      - SecHeaders@file
+{% endif %}
+
+accessLog: {}
+
+providers:
+  docker:
+    exposedByDefault: false
+
+  file:
+    directory: /etc/traefik/custom/
+    watch: true
+
+{% if traefik_ssl_enable %}
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: {{ traefik_email }}
+      storage: "/letsencrypt/acme.json"
+      tlsChallenge: {}
+{% endif %}

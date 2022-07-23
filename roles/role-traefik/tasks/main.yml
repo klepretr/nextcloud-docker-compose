@@ -1,0 +1,45 @@
+---
+# tasks file for role-traefik
+
+- name: Create Traefik directory
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/traefik"
+    state: directory
+    mode: '0755'
+
+- name: Copy Traefik docker-compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ ansible_env.HOME }}/traefik/docker-compose.yml"
+
+- name: Create Traefik custom configuration directory
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/traefik/custom"
+    state: directory
+    mode: '0755'
+
+- name: Copy Traefik middleware file
+  ansible.builtin.copy:
+    src: custom/middleware.yml
+    dest: "{{ ansible_env.HOME }}/traefik/custom"
+
+- name: Copy Traefik TLS file
+  ansible.builtin.copy:
+    src: custom/tls.yml
+    dest: "{{ ansible_env.HOME }}/traefik/custom"
+
+- name: Copy Traefik configuration file
+  ansible.builtin.template:
+    src: traefik.yaml.j2
+    dest: "{{ ansible_env.HOME }}/traefik/traefik.yaml"
+
+- name: Copy Traefik envfile file
+  ansible.builtin.template:
+    src: envfile.j2
+    dest: "{{ ansible_env.HOME }}/traefik/.env"
+    mode: 0400
+
+- name: Restart docker services
+  community.docker.docker_compose:
+    project_src: traefik
+    restarted: yes

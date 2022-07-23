@@ -1,0 +1,6 @@
+[all:vars]
+ansible_user=ubuntu
+ansible_connection=ssh
+ansible_become_method=sudo
+
+[all]

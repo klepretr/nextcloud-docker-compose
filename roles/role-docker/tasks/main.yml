@@ -1,0 +1,82 @@
+---
+# tasks file for role-docker
+
+- name: Install aptitude
+  apt:
+    name: aptitude
+    state: latest
+    update_cache: true
+
+- name: Install required system packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+      - python3-pip
+      - virtualenv
+      - python3-setuptools
+    state: latest
+    update_cache: true
+
+- name: Download Docker GPG Key
+  ansible.builtin.uri:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    return_content: yes
+  register: gpg_key
+
+- name: Remove previous GPG docker key 
+  ansible.builtin.file:
+    path: /usr/share/keyrings/docker.gpg
+    state: absent
+
+- name: Install GPG docker key 
+  ansible.builtin.shell: echo "{{ gpg_key['content'] }}" | gpg --dearmor -o /usr/share/keyrings/docker.gpg
+
+- name: Get system arch 
+  ansible.builtin.shell: dpkg --print-architecture
+  register: arch
+
+- name: Get LSB Release codename version
+  ansible.builtin.shell: lsb_release -cs
+  register: codename
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb [arch={{ arch.stdout_lines[0] }} signed-by=/usr/share/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{codename.stdout_lines[0]}} stable
+    state: present
+
+- name: Update apt and install docker and docker-compose
+  apt:
+    pkg:
+      - docker-ce
+      - docker-ce-cli 
+      - containerd.io
+      - docker-compose-plugin
+    state: latest
+    update_cache: true
+
+- name: Ensure group "docker" exists with correct gid
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Ensure current user is added to "docker" group
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    append: true
+    groups: 
+      - docker
+
+- name: Install Docker Module for Python
+  pip:
+    name: docker
+
+- name: Install Docker Compose Module for Python
+  pip:
+    name: docker-compose
+
+- name: Reset SSH connection to allow user changes to affect ansible user
+  ansible.builtin.meta:
+    reset_connection

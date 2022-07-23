@@ -1,0 +1,10 @@
+---
+- name: Execute roles
+  hosts: all
+  roles:
+    - role: role-docker
+      become: yes
+    - role: role-traefik
+      tags: ['traefik']
+    - role: role-nextcloud
+      tags: ['nextcloud']

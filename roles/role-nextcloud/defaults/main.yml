@@ -1,0 +1,8 @@
+---
+# defaults file for role-nextcloud
+mariadb_version: 10.5
+nextcloud_version: production
+nextcloud_domain: "{{ ansible_host }}"
+database_host: nextcloud_mariadb01
+database_name: nextcloud
+database_random_root_password: true

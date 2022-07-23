@@ -1,0 +1,24 @@
+---
+# tasks file for role-nextcloud
+
+- name: Create Nextcloud directory
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/nextcloud"
+    state: directory
+    mode: '0755'
+
+- name: Copy Nextcloud docker-compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ ansible_env.HOME }}/nextcloud/docker-compose.yml"
+
+- name: Copy Nextcloud envfile file
+  ansible.builtin.template:
+    src: envfile.j2
+    dest: "{{ ansible_env.HOME }}/nextcloud/.env"
+    mode: 0400
+
+- name: Restart docker services
+  community.docker.docker_compose:
+    project_src: nextcloud
+    restarted: yes
